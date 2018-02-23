@@ -1,0 +1,94 @@
+FROM php:7.1-fpm
+
+MAINTAINER Pierre-Louis Launay <laupi.frpar@gmail.com>
+
+WORKDIR /var/www
+
+ENV PHP_CPPFLAGS="$PHP_CPPFLAGS -std=c++11"
+ENV INSTALL_IMAGEMAGICK ${INSTALL_IMAGEMAGICK}
+
+ARG INSTALL_BLACKFIRE=false
+ARG INSTALL_ICU_VERSION=59.1
+ARG INSTALL_IMAGEMAGICK=false
+ARG INSTALL_PHPREDIS=false
+ARG INSTALL_XDEBUG=false
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    curl \
+    libmemcached-dev \
+    libz-dev \
+    libpq-dev \
+    libjpeg-dev \
+    libpng12-dev \
+    libfreetype6-dev \
+    libssl-dev \
+    libmcrypt-dev \
+    libmagickwand-dev \
+    imagemagick \
+  && rm -rf /var/lib/apt/lists/*
+
+# Install ICU
+RUN curl -fsS -o /tmp/icu.tgz -L http://download.icu-project.org/files/icu4c/${INSTALL_ICU_VERSION}/icu4c-$(echo $INSTALL_ICU_VERSION | sed 's/\./_/')-src.tgz \
+    && tar -zxf /tmp/icu.tgz -C /tmp \
+    && cd /tmp/icu/source \
+    && ./configure --prefix=/usr/local \
+    && make \
+    && make install \
+    && rm -rf /tmp/icu*
+
+# Install the PHP extention
+RUN pecl install imagick \
+    && printf "\n" | pecl install -o -f redis \
+    &&  rm -rf /tmp/pear \
+    && docker-php-ext-configure gd --enable-gd-native-ttf --with-jpeg-dir=/usr/lib --with-freetype-dir=/usr/include/freetype2 \
+    && docker-php-ext-configure intl --with-icu-dir=/usr/local \
+    && docker-php-ext-install mcrypt pdo_mysql zip gd bcmath opcache intl \
+    && docker-php-ext-enable imagick redis
+
+#
+#--------------------------------------------------------------------------
+# Optional Software's Installation
+#--------------------------------------------------------------------------
+#
+# Optional Software's will only be installed if you set them to `true`
+# in the `docker-compose.yml` before the build.
+# Example:
+#   - INSTALL_XDEBUG=true
+#
+
+#####################################
+# xDebug:
+#####################################
+
+RUN if [ ${INSTALL_XDEBUG} = true ]; then \
+    # Install the xdebug extension
+    pecl install xdebug && \
+    docker-php-ext-enable xdebug \
+;fi
+
+#####################################
+# Blackfire:
+#####################################
+
+RUN if [ ${INSTALL_XDEBUG} = false -a ${INSTALL_BLACKFIRE} = true ]; then \
+    version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
+    && curl -A "Docker" -o /tmp/blackfire-probe.tar.gz -D - -L -s https://blackfire.io/api/v1/releases/probe/php/linux/amd64/$version \
+    && tar zxpf /tmp/blackfire-probe.tar.gz -C /tmp \
+    && mv /tmp/blackfire-*.so $(php -r "echo ini_get('extension_dir');")/blackfire.so \
+    && printf "extension=blackfire.so\nblackfire.agent_socket=tcp://blackfire:8707\n" > $PHP_INI_DIR/conf.d/blackfire.ini \
+;fi
+
+# Copy xdebug configuration for remote debugging
+COPY ./xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
+
+# Copy opcache configration
+COPY ./opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+ADD ./local.ini /usr/local/etc/php/conf.d
+ADD ./local.pool.conf /usr/local/etc/php-fpm.d/
+
+RUN usermod -u 1000 www-data
+
+CMD ["php-fpm"]
+
+EXPOSE 9000
