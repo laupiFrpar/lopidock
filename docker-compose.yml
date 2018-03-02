@@ -9,6 +9,28 @@ services:
     volumes:
       - ${APPLICATION}:/var/www
 
+### Workspace Utilities Container ###
+
+  workspace:
+    build:
+      context: ./workspace
+      args:
+        - COMPOSER_GLOBAL_INSTALL=${WORKSPACE_COMPOSER_GLOBAL_INSTALL}
+        - PUID=${WORKSPACE_PUID}
+        - PGID=${WORKSPACE_PGID}
+        - TZ=${WORKSPACE_TIMEZONE}
+      dockerfile: "Dockerfile-${PHP_VERSION}"
+    volumes_from:
+      - applications
+    extra_hosts:
+      - "dockerhost:${DOCKER_HOST_IP}"
+    ports:
+      - "${WORKSPACE_SSH_PORT}:22"
+    tty: true
+    networks:
+      - frontend
+      - backend
+
 ### PHP-FPM Container #######################################
 
   php-fpm:
@@ -16,15 +38,15 @@ services:
       context: ./php
       args:
         - INSTALL_ICU_VERSION=${PHP_INSTALL_ICU_VERSION}
-      dockerfile: "Dockerfile"
+      dockerfile: "Dockerfile-${PHP_VERSION}"
     volumes_from:
       - applications
     volumes:
       - ./php/php.ini:/usr/local/etc/php/php.ini
     expose:
       - "9000"
-    # depends_on:
-    #   - workspace
+    depends_on:
+      - workspace
     extra_hosts:
       - "dockerhost:${DOCKER_HOST_IP}"
     networks:
