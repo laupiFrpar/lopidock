@@ -1,3 +1,5 @@
 *.log
 data/*
 !data/.gitkeep
+sites/*.conf
+!sites/default.conf
