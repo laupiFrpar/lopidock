@@ -90,6 +90,7 @@ services:
       - TZ=${WORKSPACE_TIMEZONE}
     volumes:
       - ${DATA_SAVE_PATH}/mysql-${MYSQL_VERSION}:/var/lib/mysql
+      - ${MYSQL_CUSTOM_CONFIG_PATH}:/etc/mysql/conf.d/my.cnf
     ports:
       - "${MYSQL_PORT}:3306"
     networks:
