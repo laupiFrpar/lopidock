@@ -4,3 +4,4 @@ data/*
 sites/*.conf
 !sites/default.conf
 /.env
+/docker-compose.yml
