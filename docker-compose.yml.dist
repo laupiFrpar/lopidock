@@ -42,7 +42,8 @@ services:
     volumes_from:
       - applications
     volumes:
-      - ./php/php.ini:/usr/local/etc/php/php.ini
+      - ./php/php-${PHP_VERSION}.ini:/usr/local/etc/php/php.ini
+      - ${PHP_CUSTOM_CONFIG_PATH}:/usr/local/etc/php/conf.d/custom.ini
     expose:
       - "9000"
     depends_on:
