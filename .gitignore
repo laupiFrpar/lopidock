@@ -4,3 +4,4 @@ data/*
 sites/*.conf
 !sites/default.conf
 /.env
+.DS_Store
