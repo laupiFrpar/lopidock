@@ -8,6 +8,6 @@ syncs:
 
     src: '${APPLICATION}' # host source directory
     sync_userid: 1000 # giving permissions to www-data user (as defined in nginx and php-fpm Dockerfiles)
-    sync_strategy: '${DOCKER_SYNC_STRATEGY}' # for osx use 'native_osx', for windows use 'unison'
+    sync_strategy: '${DOCKER_SYNC_STRATEGY}'
 
-    sync_excludes: ['laradock', 'ignored_folder_example'] # ignored directories
+    sync_excludes: ['lopidock', 'bundles', 'customConfig', 'data', 'divers', 'doc.wiki', 'docker', 'logs'] # ignored directories
