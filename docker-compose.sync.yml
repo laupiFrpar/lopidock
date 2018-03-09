@@ -2,14 +2,13 @@ version: '2'
 
 services:
 
-### Applications Code Container #############################
+### Applications Code Container ###
+  applications:
+    image: tianon/true
+    volumes:
+      - applications-sync:/var/www:nocopy # nocopy is required
 
-    applications:
-      image: tianon/true
-      volumes:
-        - applications-sync:/var/www:nocopy # nocopy is required
-
-### Volumes Setup #############################################
+### Volumes Setup ###
 
 volumes:
   applications-sync:
