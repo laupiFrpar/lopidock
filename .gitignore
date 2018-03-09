@@ -5,3 +5,4 @@ sites/*.conf
 !sites/default.conf
 /.env
 .DS_Store
+.docker-sync
