@@ -24,15 +24,34 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 # Install the PHP mcrypt extention
-RUN docker-php-ext-install mcrypt pdo_mysql zip bcmath opcache \
+RUN docker-php-ext-install mcrypt pdo_mysql zip bcmath \
   && docker-php-ext-configure gd \
     --enable-gd-native-ttf \
     --with-jpeg-dir=/usr/lib \
     --with-freetype-dir=/usr/include/freetype2 \
   && docker-php-ext-install gd
 
-# Copy opcache configration
+#####################################
+# OPCACHE - APCU
+#####################################
+ARG INSTALL_OPCACHE=false
+ARG INSTALL_APCU=false
+RUN if [ ${INSTALL_OPCACHE} = true ] && [ ${INSTALL_APCU} = false]; then \
+    docker-php-ext-install opcache \
+;fi
 COPY ./opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+
+RUN if [ ${INSTALL_OPCACHE} = false ] && [ ${INSTALL_APCU} = true ]; then \
+    pecl -vvv install apcu && \
+    docker-php-ext-enable apcu \
+;fi
+COPY ./apcu.ini /usr/local/etc/php/conf.d/apcu.ini
+
+ARG INSTALL_APCU_BC=false
+RUN if [ ${INSTALL_OPCACHE} = false ] && [ ${INSTALL_APCU} = true ] && [ ${INSTALL_APCU_BC} = true ]; then \
+    pecl -vvv install apcu_bc && \
+    docker-php-ext-enable apcu_bc \
+;fi
 
 #####################################
 # PHP REDIS EXTENSION FOR PHP 7.0
