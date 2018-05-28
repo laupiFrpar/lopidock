@@ -107,13 +107,31 @@ services:
     networks:
       - backend
 
-### Mailhog Container #########################################
+### Mail Container #########################################
 
   mailhog:
     build: ./mailhog
     ports:
       - "1025:1025"
       - "8025:8025"
+    networks:
+      - frontend
+      - backend
+
+  mailcatcher:
+    build: ./mailcatcher
+    ports:
+      - "1025:1025"
+      - "1080:1080"
+    networks:
+      - frontend
+      - backend
+
+  maildev:
+    build: ./maildev
+    ports:
+      - "1025:25"
+      - "1080:80"
     networks:
       - frontend
       - backend
