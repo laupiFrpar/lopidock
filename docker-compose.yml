@@ -19,6 +19,9 @@ services:
         - PUID=${WORKSPACE_PUID}
         - PGID=${WORKSPACE_PGID}
         - TZ=${WORKSPACE_TIMEZONE}
+        - PHP_INSTALL_APCU=${PHP_INSTALL_APCU}
+        - PHP_INSTALL_APCU_BC=${PHP_INSTALL_APCU_BC}
+        - PHP_INSTALL_OPCACHE=${PHP_INSTALL_OPCACHE}
       dockerfile: "Dockerfile-${PHP_VERSION}"
     volumes_from:
       - applications
@@ -38,6 +41,9 @@ services:
       context: ./php
       args:
         - INSTALL_ICU_VERSION=${PHP_INSTALL_ICU_VERSION}
+        - INSTALL_APCU=${PHP_INSTALL_APCU}
+        - INSTALL_APCU_BC=${PHP_INSTALL_APCU_BC}
+        - INSTALL_OPCACHE=${PHP_INSTALL_OPCACHE}
       dockerfile: "Dockerfile-${PHP_VERSION}"
     volumes_from:
       - applications
