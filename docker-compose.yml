@@ -2,14 +2,14 @@ version: '2'
 
 services:
 
-### Applications Code Container #####
+### Applications Code Container #########
 
   applications:
     image: tianon/true
     volumes:
       - ${APPLICATION}:/var/www
 
-### Workspace Utilities Container ###
+### Workspace Utilities Container #######
 
   workspace:
     build:
@@ -34,7 +34,7 @@ services:
     volumes_from:
       - applications
 
-### PHP-FPM Container ###############
+### PHP-FPM Container ###################
 
   php-fpm:
     build:
@@ -59,7 +59,7 @@ services:
     volumes_from:
       - applications
 
-### NGINX Server Container ##########
+### NGINX Server Container ##############
 
   nginx:
     build:
@@ -81,7 +81,7 @@ services:
     volumes_from:
       - applications
 
-### Database Container #################
+### Database Container ##################
 
   mysql:
     build:
@@ -111,7 +111,7 @@ services:
     volumes:
       - ${DATA_SAVE_PATH}/redis:/data
 
-### Mail Container ##################
+### Mail Container ######################
 
   mailcatcher:
     build: ./mailcatcher
@@ -140,7 +140,7 @@ services:
       - "${MAILHOG_PORT_SMTP}:1025"
       - "${MAILHOG_PORT_WEB}:8025"
 
-### ElasticSearch ###################
+### ElasticSearch #######################
 
   elasticsearch1:
     build:
@@ -152,9 +152,9 @@ services:
       - "${ELASTICSEARCH1_PORT_1}:9200"
       - "${ELASTICSEARCH1_PORT_2}:9300"
     volumes:
-      - ${DATA_SAVE_PATH}/elasticsearch-1:/data
+      - ${DATA_SAVE_PATH}/elasticsearch-1:/usr/share/elasticsearch/data
 
-### Kibana ##########################
+### Kibana ##############################
 
   kibana41:
     build:
@@ -168,7 +168,7 @@ services:
     ports:
       - "${KIBANA41_PORT}:5601"
 
-### ELK - Elasticsearch Logstash Kibana
+### ELK - Elasticsearch Logstash Kibana #
 
   elk:
     build:
@@ -181,11 +181,11 @@ services:
     volumes:
       - ./elk/logstash:/etc/logstash
       - ./elk/logstash/patterns:/opt/logstash/patterns
-      - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
+      - ${DATA_SAVE_PATH}/elk:/data
     volumes_from:
       - applications
 
-### Networks Setup ##################
+### Networks Setup ######################
 
 networks:
   backend:
@@ -193,7 +193,7 @@ networks:
   frontend:
     driver: "bridge"
 
-### Volumes Setup ###################
+### Volumes Setup #######################
 
 volumes:
   elasticsearch1:
