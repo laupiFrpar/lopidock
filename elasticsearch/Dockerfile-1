@@ -1,0 +1,3 @@
+FROM elasticsearch:1-alpine
+
+MAINTAINER Pierre-Louis Launay <laupi.frpar@gmail.com>

@@ -2,7 +2,7 @@ version: '2'
 
 services:
 
-### Applications Code Container #############################
+### Applications Code Container #####
 
   applications:
     image: tianon/true
@@ -13,7 +13,6 @@ services:
 
   workspace:
     build:
-      context: ./workspace
       args:
         - COMPOSER_GLOBAL_INSTALL=${WORKSPACE_COMPOSER_GLOBAL_INSTALL}
         - PUID=${WORKSPACE_PUID}
@@ -22,137 +21,183 @@ services:
         - PHP_INSTALL_APCU=${PHP_INSTALL_APCU}
         - PHP_INSTALL_APCU_BC=${PHP_INSTALL_APCU_BC}
         - PHP_INSTALL_OPCACHE=${PHP_INSTALL_OPCACHE}
+      context: ./workspace
       dockerfile: "Dockerfile-${PHP_VERSION}"
-    volumes_from:
-      - applications
     extra_hosts:
       - "dockerhost:${DOCKER_HOST_IP}"
+    networks:
+      - backend
+      - frontend
     ports:
       - "${WORKSPACE_SSH_PORT}:22"
     tty: true
-    networks:
-      - frontend
-      - backend
+    volumes_from:
+      - applications
 
-### PHP-FPM Container #######################################
+### PHP-FPM Container ###############
 
   php-fpm:
     build:
-      context: ./php
       args:
         - INSTALL_ICU_VERSION=${PHP_INSTALL_ICU_VERSION}
         - INSTALL_APCU=${PHP_INSTALL_APCU}
         - INSTALL_APCU_BC=${PHP_INSTALL_APCU_BC}
         - INSTALL_OPCACHE=${PHP_INSTALL_OPCACHE}
+      context: ./php
       dockerfile: "Dockerfile-${PHP_VERSION}"
-    volumes_from:
-      - applications
-    volumes:
-      - ./php/php-${PHP_VERSION}.ini:/usr/local/etc/php/php.ini
-      - ${PHP_CUSTOM_CONFIG_PATH}:/usr/local/etc/php/conf.d/custom.ini
-    expose:
-      - "9000"
     depends_on:
       - workspace
+    expose:
+      - "9000"
     extra_hosts:
       - "dockerhost:${DOCKER_HOST_IP}"
     networks:
       - backend
+    volumes:
+      - ./php/php-${PHP_VERSION}.ini:/usr/local/etc/php/php.ini
+      - ${PHP_CUSTOM_CONFIG_PATH}:/usr/local/etc/php/conf.d/custom.ini
+    volumes_from:
+      - applications
 
-### NGINX Server Container ##################################
+### NGINX Server Container ##########
 
   nginx:
     build:
-      context: ./nginx
       args:
         - PHP_UPSTREAM_CONTAINER=${NGINX_PHP_UPSTREAM_CONTAINER}
         - PHP_UPSTREAM_PORT=${NGINX_PHP_UPSTREAM_PORT}
-    volumes_from:
-      - applications
-    volumes:
-      - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
-      - ${NGINX_SITES_PATH}:/etc/nginx/sites-available
-    ports:
-      - "${NGINX_HOST_HTTP_PORT}:80"
-      - "${NGINX_HOST_HTTPS_PORT}:443"
+      context: ./nginx
     depends_on:
       - php-fpm
     networks:
-      - frontend
       - backend
+      - frontend
+    ports:
+      - "${NGINX_HOST_HTTP_PORT}:80"
+      - "${NGINX_HOST_HTTPS_PORT}:443"
+    volumes:
+      - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
+      - ${NGINX_SITES_PATH}:/etc/nginx/sites-available
+    volumes_from:
+      - applications
 
-### MySQL Container ###
+### Database Container #################
 
   mysql:
     build:
-      context: ./mysql
       args:
         - MYSQL_VERSION=${MYSQL_VERSION}
+      context: ./mysql
     environment:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - TZ=${WORKSPACE_TIMEZONE}
+    networks:
+      - backend
+    ports:
+      - "${MYSQL_PORT}:3306"
     volumes:
       - ${DATA_SAVE_PATH}/mysql-${MYSQL_VERSION}:/var/lib/mysql
       - ${MYSQL_CUSTOM_CONFIG_PATH}:/etc/mysql/conf.d/my.cnf
-    ports:
-      - "${MYSQL_PORT}:3306"
-    networks:
-      - backend
-
-### Redis Container ###
 
   redis:
     build: ./redis
-    volumes:
-      - ${DATA_SAVE_PATH}/redis:/data
+    networks:
+      - backend
     ports:
       - "${REDIS_PORT}:6379"
-    networks:
-      - backend
+    volumes:
+      - ${DATA_SAVE_PATH}/redis:/data
 
-### Mail Container #########################################
-
-  mailhog:
-    build: ./mailhog
-    ports:
-      - "1025:1025"
-      - "8025:8025"
-    networks:
-      - frontend
-      - backend
+### Mail Container ##################
 
   mailcatcher:
     build: ./mailcatcher
-    ports:
-      - "1025:1025"
-      - "1080:1080"
     networks:
-      - frontend
       - backend
+      - frontend
+    ports:
+      - "${MAILCACTCHER_PORT_SMTP}:1025"
+      - "${MAILCACTCHER_PORT_WEB}:1080"
 
   maildev:
     build: ./maildev
-    ports:
-      - "1025:25"
-      - "1080:80"
     networks:
-      - frontend
       - backend
+      - frontend
+    ports:
+      - "${MAILDEV_PORT_SMTP}:25"
+      - "${MAILDEV_PORT_WEB}:80"
 
-### Networks Setup ###
+  mailhog:
+    build: ./mailhog
+    networks:
+      - backend
+      - frontend
+    ports:
+      - "${MAILHOG_PORT_SMTP}:1025"
+      - "${MAILHOG_PORT_WEB}:8025"
+
+### ElasticSearch ###################
+
+  elasticsearch1:
+    build:
+      context: ./elasticsearch
+      dockerfile: "Dockerfile-1"
+    networks:
+      - backend
+    ports:
+      - "${ELASTICSEARCH1_PORT_1}:9200"
+      - "${ELASTICSEARCH1_PORT_2}:9300"
+    volumes:
+      - ${DATA_SAVE_PATH}/elasticsearch-1:/data
+
+### Kibana ##########################
+
+  kibana41:
+    build:
+      context: ./kibana
+      dockerfile: "Dockerfile-41"
+    links:
+      - elasticsearch1:elasticsearch
+    networks:
+      - backend
+      - frontend
+    ports:
+      - "${KIBANA41_PORT}:5601"
+
+### ELK - Elasticsearch Logstash Kibana
+
+  elk:
+    build:
+      context: ./elk
+    networks:
+      - backend
+      - frontend
+    ports:
+      - "${ELK_PORT}:80"
+    volumes:
+      - ./elk/logstash:/etc/logstash
+      - ./elk/logstash/patterns:/opt/logstash/patterns
+      - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
+    volumes_from:
+      - applications
+
+### Networks Setup ##################
 
 networks:
-  frontend:
-    driver: "bridge"
   backend:
     driver: "bridge"
+  frontend:
+    driver: "bridge"
 
-### Volumes Setup ###
+### Volumes Setup ###################
 
 volumes:
+  elasticsearch1:
+    driver: "local"
   mysql:
     driver: "local"
   redis:

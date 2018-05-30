@@ -1,0 +1,3 @@
+FROM kibana:4.1
+
+MAINTAINER Pierre-Louis Launay <laupi.frpar@gmail.com>
