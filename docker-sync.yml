@@ -10,4 +10,14 @@ syncs:
     sync_userid: 1000 # giving permissions to www-data user (as defined in nginx and php-fpm Dockerfiles)
     sync_strategy: '${DOCKER_SYNC_STRATEGY}'
 
+    # when a port of a container is exposed, on which IP does it get exposed. Localhost for docker for mac, something else for docker-machine
+    # default is 'auto', which means, your docker-machine/docker host ip will be detected automatically. If you set this to a concrete IP, this ip will be enforced
+    sync_host_ip: 'auto'
+
+    # should be a unique port this sync instance uses on the host to offer the rsync service on
+    # do not use this for unison - not needed there
+    # sync_host_port: 10871
+
+    # optional, a list of excludes. These patterns will not be synced
+    # see http://www.cis.upenn.edu/~bcpierce/unison/download/releases/stable/unison-manual.html#ignore for the possible syntax and see sync_excludes_type below
     sync_excludes: ${DOCKER_SYNC_EXCLUDES} # ignored directories
