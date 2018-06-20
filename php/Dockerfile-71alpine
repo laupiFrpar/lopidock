@@ -1,0 +1,189 @@
+#
+#--------------------------------------------------------------------------
+# Image Setup
+#--------------------------------------------------------------------------
+#
+
+FROM php:7.1-fpm-alpine
+
+MAINTAINER Pierre-Louis Launay <laupi.frpar@gmail.com>
+
+#####################################
+# Get arguments
+#####################################
+
+ARG INSTALL_APCU=false
+ARG INSTALL_APCU_BC=false
+ARG INSTALL_BCMATH=false
+ARG INSTALL_GD=false
+ARG INSTALL_IMAGICK=false
+ARG INSTALL_ICU_VERSION=60.1
+ARG INSTALL_INTL=false
+ARG INSTALL_MCRYPT=false
+ARG INSTALL_MYSQL=false
+ARG INSTALL_OPCACHE=false
+ARG INSTALL_REDIS=false
+ARG INSTALL_ZIP=false
+
+#####################################
+# Set environments variable
+#####################################
+
+ENV PHP_CPPFLAGS="$PHP_CPPFLAGS -std=c++11"
+
+#####################################
+# Install base
+#####################################
+
+RUN set -ex; \
+    apk add --no-cache --virtual .build-deps \
+        g++ \
+        gcc \
+        libc-dev \
+        make \
+        autoconf \
+        bash \
+        curl \
+        file \
+        # icu-dev \
+        freetype-dev \
+        # libmemcached-dev \
+        # libz-dev \
+        # libpq-dev \
+        # libjpeg-dev \
+        # libpng12-dev \
+        # libfreetype6-dev \
+        # libssl-dev \
+        libmcrypt-dev \
+        # libmagickwand-dev \
+        libjpeg-turbo-dev \
+        libpng-dev \
+        zlib-dev \
+        # imagemagick \
+        # imagemagick-dev \
+    ;
+    # runDeps="$( \
+    #     scanelf --needed --nobanner --format '%n#p' --recursive /usr/local/lib/php/extensions \
+    #         | tr ',' '\n' \
+    #         | sort -u \
+    #         | awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
+    # )"; \
+    # apk add --virtual .php.phpexts-rundeps $runDeps; \
+    # apk del .build-deps
+
+#####################################
+# APCU
+#####################################
+
+RUN if [ ${INSTALL_OPCACHE} = false ] && [ ${INSTALL_APCU} = true ]; then \
+    pecl install apcu; \
+    docker-php-ext-enable apcu; \
+fi
+
+RUN if [ ${INSTALL_OPCACHE} = false ] && [ ${INSTALL_APCU} = true ] && [ ${INSTALL_APCU_BC} = true ]; then \
+    pecl install apcu_bc; \
+fi
+
+COPY ./apcu.ini /usr/local/etc/php/conf.d/apcu.ini
+
+#####################################
+# BCMATH
+#####################################
+
+RUN if [ ${INSTALL_BCMATH} = true ]; then \
+    docker-php-ext-install bcmath; \
+fi
+
+#####################################
+# GD
+#####################################
+
+RUN if [ ${INSTALL_GD} = true ]; then \
+    docker-php-ext-configure gd --enable-gd-native-ttf --with-jpeg-dir=/usr --with-freetype-dir=/usr --with-png-dir=/usr; \
+    docker-php-ext-install gd; \
+fi
+
+#####################################
+# ImageMagick
+#####################################
+
+RUN if [ ${INSTALL_IMAGICK} = true ]; then \
+    pecl install imagick; \
+    docker-php-ext-enable imagick; \
+fi
+
+ADD ./custom.ini /usr/local/etc/php/conf.d
+
+#####################################
+# Human Language and Character Encoding Support
+#####################################
+
+RUN if [ ${INSTALL_INTL} = true ]; then \
+    curl -fsS -o /tmp/icu.tgz -L http://download.icu-project.org/files/icu4c/${INSTALL_ICU_VERSION}/icu4c-$(echo $INSTALL_ICU_VERSION | sed 's/\./_/')-src.tgz; \
+    tar -zxf /tmp/icu.tgz -C /tmp; \
+    cd /tmp/icu/source; \
+    ./configure --prefix=/usr/local; \
+    make; \
+    make install; \
+    rm -rf /tmp/icu*; \
+    docker-php-ext-configure intl --with-icu-dir=/usr/local; \
+    docker-php-ext-install intl; \
+fi
+
+#####################################
+# MCRYPT
+#####################################
+
+RUN if [ ${INSTALL_MCRYPT} = true ]; then \
+    docker-php-ext-install mcrypt; \
+fi
+
+#####################################
+# MySQL
+#####################################
+
+RUN if [ ${INSTALL_MYSQL} = true ]; then \
+    docker-php-ext-install pdo_mysql; \
+fi
+
+#####################################
+# OPCACHE
+#####################################
+
+RUN if [ ${INSTALL_OPCACHE} = true ] && [ ${INSTALL_APCU} = false ]; then \
+    docker-php-ext-install opcache; \
+fi
+
+COPY ./opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+
+#####################################
+# REDIS
+#####################################
+
+RUN if [ ${INSTALL_REDIS} = true ]; then \
+    pecl install -o -f redis; \
+    docker-php-ext-enable redis; \
+fi
+
+#####################################
+# ZIP
+#####################################
+
+RUN if [ ${INSTALL_ZIP} = true ]; then \
+    docker-php-ext-install zip; \
+fi
+
+#####################################
+# Clean up
+#####################################
+
+RUN apk del .build-deps; \
+    rm -rf /tmp/pear;
+
+# RUN usermod -u 1000 www-data
+
+WORKDIR /var/www
+
+CMD ["php-fpm -F"]
+
+EXPOSE 9000

@@ -7,7 +7,7 @@ services:
   applications:
     image: tianon/true
     volumes:
-      - ${APPLICATION}:/var/www
+      - ${APPLICATION}:/var/www:delegated
 
 ### Workspace Utilities Container #######
 
@@ -39,10 +39,18 @@ services:
   php-fpm:
     build:
       args:
-        - INSTALL_ICU_VERSION=${PHP_INSTALL_ICU_VERSION}
         - INSTALL_APCU=${PHP_INSTALL_APCU}
         - INSTALL_APCU_BC=${PHP_INSTALL_APCU_BC}
+        - INSTALL_BCMATH=${PHP_INSTALL_BCMATH}
+        - INSTALL_GD=${PHP_INSTALL_GD}
+        - INSTALL_ICU_VERSION=${PHP_INSTALL_ICU_VERSION}
+        - INSTALL_IMAGICK=${PHP_INSTALL_IMAGICK}
+        - INSTALL_INTL=${PHP_INSTALL_INTL}
+        - INSTALL_MCRYPT=${PHP_INSTALL_MCRYPT}
+        - INSTALL_MYSQL=${PHP_INSTALL_MYSQL}
         - INSTALL_OPCACHE=${PHP_INSTALL_OPCACHE}
+        - INSTALL_REDIS=${PHP_INSTALL_REDIS}
+        - INSTALL_ZIP=${PHP_INSTALL_ZIP}
       context: ./php
       dockerfile: "Dockerfile-${PHP_VERSION}"
     depends_on:
