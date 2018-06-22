@@ -54,7 +54,7 @@ RUN apt-get update \
 ARG PHP_INSTALL_OPCACHE=false
 ARG PHP_INSTALL_APCU=false
 ARG PHP_INSTALL_APCU_BC=false
-RUN if [ ${PHP_INSTALL_OPCACHE} = true ] && [ ${PHP_INSTALL_APCU} = false]; then \
+RUN if [ ${PHP_INSTALL_OPCACHE} = true ] && [ ${PHP_INSTALL_APCU} = false ]; then \
     # Install opcache
     echo "install opcache" \
 ;fi
