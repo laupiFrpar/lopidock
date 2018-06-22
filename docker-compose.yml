@@ -52,7 +52,7 @@ services:
         - INSTALL_REDIS=${PHP_INSTALL_REDIS}
         - INSTALL_ZIP=${PHP_INSTALL_ZIP}
       context: ./php
-      dockerfile: "Dockerfile-${PHP_VERSION}"
+      dockerfile: "Dockerfile-${PHP_VERSION}${SYSTEM_VERSION}"
     depends_on:
       - workspace
     expose:
