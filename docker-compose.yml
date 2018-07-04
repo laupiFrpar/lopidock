@@ -112,7 +112,10 @@ services:
       - ${MYSQL_CUSTOM_CONFIG_PATH}:/etc/mysql/conf.d/my.cnf
 
   redis:
-    build: ./redis
+    build:
+      args:
+        - REDIS_VERSION=${REDIS_VERSION}
+      context: ./redis
     networks:
       - backend
     ports:
@@ -149,34 +152,6 @@ services:
       - "${MAILHOG_PORT_SMTP}:1025"
       - "${MAILHOG_PORT_WEB}:8025"
 
-### ElasticSearch #######################
-
-  elasticsearch1:
-    build:
-      context: ./elasticsearch
-      dockerfile: "Dockerfile-1"
-    networks:
-      - backend
-    ports:
-      - "${ELASTICSEARCH1_PORT_1}:9200"
-      - "${ELASTICSEARCH1_PORT_2}:9300"
-    volumes:
-      - ${DATA_SAVE_PATH}/elasticsearch-1:/usr/share/elasticsearch/data
-
-### Kibana ##############################
-
-  kibana41:
-    build:
-      context: ./kibana
-      dockerfile: "Dockerfile-41"
-    links:
-      - elasticsearch1:elasticsearch
-    networks:
-      - backend
-      - frontend
-    ports:
-      - "${KIBANA41_PORT}:5601"
-
 ### ELK - Elasticsearch Logstash Kibana #
 
   elk:
@@ -205,8 +180,6 @@ networks:
 ### Volumes Setup #######################
 
 volumes:
-  elasticsearch1:
-    driver: "local"
   mysql:
     driver: "local"
   redis:
