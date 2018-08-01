@@ -169,6 +169,19 @@ services:
     volumes_from:
       - applications
 
+### Container management ################
+
+  ## On MacOS X, you shoudl execute `socat TCP-LISTEN:2376,reuseaddr,fork,bind=127.0.0.1 UNIX-CLIENT:/var/run/docker.sock`
+
+  portainer:
+    image: portainer/portainer
+    ports:
+      - "9000:9000"
+    command: -H unix:///var/run/docker.sock --no-auth
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DATA_SAVE_PATH}/portainer:/data
+
 ### Networks Setup ######################
 
 networks:
