@@ -6,3 +6,4 @@ sites/*.conf
 /.env
 .DS_Store
 .docker-sync
+docker-compose-*.yml
