@@ -123,6 +123,20 @@ services:
     volumes:
       - ${DATA_SAVE_PATH}/redis:/data
 
+  influxdb:
+    build:
+      args:
+        - INFLUXDB_VERSION=${INFLUXDB_VERSION}
+      context: ./influxdb
+    networks:
+      - backend
+    ports:
+      - "${INFLUXDB_PORT_HTTP_API}:8086"
+      - "${INFLUXDB_PORT_ADMINISTRATOR}:8083"
+      - "${INFLUXDB_PORT_GRAPHITE}:2003"
+    volumes:
+      - ${DATA_SAVE_PATH}/influxdb:/var/lib/influxdb
+
 ### Mail Container ######################
 
   mailcatcher:
