@@ -169,6 +169,18 @@ services:
     volumes_from:
       - applications
 
+### Grafana #############################
+
+  grafana:
+    build:
+      context: ./grafana
+    networks:
+      - backend
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    volumes:
+      - ${DATA_SAVE_PATH}/grafana:/var/lib/grafana
+
 ### Container management ################
 
   ## On MacOS X, you shoudl execute `socat TCP-LISTEN:2376,reuseaddr,fork,bind=127.0.0.1 UNIX-CLIENT:/var/run/docker.sock`
