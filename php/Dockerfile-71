@@ -48,7 +48,7 @@ RUN apt-get update; \
         libmcrypt-dev \
     ;
 
-ADD ./custom.ini /usr/local/etc/php/conf.d
+COPY ./usr/local/etc/php/conf.d/custom.ini /usr/local/etc/php/conf.d
 
 #####################################
 # APCU
@@ -63,7 +63,7 @@ RUN if [ ${INSTALL_OPCACHE} = false ] && [ ${INSTALL_APCU} = true ] && [ ${INSTA
     pecl install apcu_bc; \
 fi
 
-COPY ./apcu.ini /usr/local/etc/php/conf.d/apcu.ini
+COPY ./usr/local/etc/php/conf.d/apcu.ini /usr/local/etc/php/conf.d/apcu.ini
 
 #####################################
 # BCMATH
@@ -136,7 +136,7 @@ RUN if [ ${INSTALL_OPCACHE} = true ] && [ ${INSTALL_APCU} = false ]; then \
     docker-php-ext-install opcache; \
 fi
 
-COPY ./opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY ./usr/local/etc/php/conf.d/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 
 #####################################
 # REDIS
@@ -168,8 +168,8 @@ RUN rm -rf /var/lib/apt/lists/*; \
 
 RUN usermod -u 1000 www-data
 
-WORKDIR /var/www
-
 CMD ["php-fpm"]
 
 EXPOSE 9000
+
+WORKDIR /var/www

@@ -95,7 +95,7 @@ services:
   mysql:
     build:
       args:
-        - MYSQL_VERSION=${MYSQL_VERSION}
+        - VERSION=${MYSQL_VERSION}
       context: ./mysql
     environment:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
@@ -114,7 +114,7 @@ services:
   redis:
     build:
       args:
-        - REDIS_VERSION=${REDIS_VERSION}
+        - VERSION=${REDIS_VERSION}
       context: ./redis
     networks:
       - backend
@@ -126,7 +126,7 @@ services:
   influxdb:
     build:
       args:
-        - INFLUXDB_VERSION=${INFLUXDB_VERSION}
+        - VERSION=${INFLUXDB_VERSION}
       context: ./influxdb
     networks:
       - backend
@@ -140,13 +140,16 @@ services:
 ### Mail Container ######################
 
   mailcatcher:
-    build: ./mailcatcher
+    build:
+      args:
+        - VERSION=${MAILCATCHER_VERSION}
+      context: ./mailcatcher
     networks:
       - backend
       - frontend
     ports:
-      - "${MAILCACTCHER_PORT_SMTP}:1025"
-      - "${MAILCACTCHER_PORT_WEB}:1080"
+      - "${MAILCATCHER_PORT_SMTP}:1025"
+      - "${MAILCATCHER_PORT_WEB}:1080"
 
   maildev:
     build: ./maildev
@@ -194,19 +197,6 @@ services:
       - "${GRAFANA_PORT}:3000"
     volumes:
       - ${DATA_SAVE_PATH}/grafana:/var/lib/grafana
-
-### Container management ################
-
-  ## On MacOS X, you shoudl execute `socat TCP-LISTEN:2376,reuseaddr,fork,bind=127.0.0.1 UNIX-CLIENT:/var/run/docker.sock`
-
-  portainer:
-    image: portainer/portainer
-    ports:
-      - "9000:9000"
-    command: -H unix:///var/run/docker.sock --no-auth
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ${DATA_SAVE_PATH}/portainer:/data
 
 ### Networks Setup ######################
 

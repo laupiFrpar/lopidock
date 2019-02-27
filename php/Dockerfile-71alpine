@@ -65,7 +65,7 @@ RUN if [ ${INSTALL_OPCACHE} = false ] && [ ${INSTALL_APCU} = true ] && [ ${INSTA
     pecl install apcu_bc; \
 fi
 
-COPY ./apcu.ini /usr/local/etc/php/conf.d/apcu.ini
+COPY ./usr/local/etc/php/conf.d/apcu.ini /usr/local/etc/php/conf.d/apcu.ini
 
 #####################################
 # BCMATH
@@ -99,7 +99,7 @@ RUN if [ ${INSTALL_IMAGICK} = true ]; then \
     # apk del .imagick-dev; \
 fi
 
-ADD ./custom.ini /usr/local/etc/php/conf.d
+COPY ./usr/local/etc/php/conf.d/custom.ini /usr/local/etc/php/conf.d/custom.ini
 
 #####################################
 # Human Language and Character Encoding Support
@@ -141,7 +141,7 @@ RUN if [ ${INSTALL_OPCACHE} = true ] && [ ${INSTALL_APCU} = false ]; then \
     docker-php-ext-install opcache; \
 fi
 
-COPY ./opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY ./usr/local/etc/php/conf.d/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 
 #####################################
 # REDIS
@@ -177,8 +177,8 @@ RUN runDeps="$( \
 
 # RUN usermod -u 1000 www-data
 
-WORKDIR /var/www
-
 CMD ["php-fpm", "-F"]
 
 EXPOSE 9000
+
+WORKDIR /var/www

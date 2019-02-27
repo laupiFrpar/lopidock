@@ -1,10 +1,11 @@
-ARG REDIS_VERSION=alpine
-FROM redis:${REDIS_VERSION}
+ARG VERSION=alpine
+
+FROM redis:${VERSION}
 
 MAINTAINER Pierre-Louis Launay <laupi.frpar@gmail.com>
 
 VOLUME /data
 
-EXPOSE 6379
-
 CMD ["redis-server"]
+
+EXPOSE 6379

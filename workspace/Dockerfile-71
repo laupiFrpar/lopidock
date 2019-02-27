@@ -58,12 +58,12 @@ RUN if [ ${PHP_INSTALL_OPCACHE} = true ] && [ ${PHP_INSTALL_APCU} = false ]; the
     # Install opcache
     echo "install opcache" \
 ;fi
-COPY ./opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY ./usr/local/etc/php/conf.d/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 
 RUN if [ ${PHP_INSTALL_OPCACHE} = false ] && [ ${PHP_INSTALL_APCU} = true ]; then \
     apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages php-apcu \
 ;fi
-COPY ./apcu.ini /usr/local/etc/php/conf.d/apcu.ini
+COPY ./usr/local/etc/php/conf.d/apcu.ini /usr/local/etc/php/conf.d/apcu.ini
 
 RUN if [ ${PHP_INSTALL_OPCACHE} = false ] && [ ${PHP_INSTALL_APCU} = true ] && [ ${PHP_INSTALL_APCU_BC} = true ]; then \
     apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages php-apcu-bc \
@@ -111,7 +111,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 #####################################
 
 # Add the composer.json
-COPY ./composer.json /home/lopidock/.composer/composer.json
+COPY ./home/lopidock/composer/composer.json /home/lopidock/.composer/composer.json
 
 # Make sure that ~/.composer belongs to lopidock
 RUN chown -R lopidock:lopidock /home/lopidock/.composer
@@ -130,7 +130,7 @@ RUN if [ ${COMPOSER_GLOBAL_INSTALL} = true ]; then \
 #####################################
 
 USER lopidock
-COPY ./aliases.sh /home/lopidock/aliases.sh
+COPY ./home/lopidock/aliases.sh /home/lopidock/aliases.sh
 RUN echo "" >> ~/.bashrc \
     && echo "# Load Custom Aliases" >> ~/.bashrc \
     && echo "source /home/lopidock/aliases.sh" >> ~/.bashrc \

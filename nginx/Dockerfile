@@ -2,8 +2,6 @@ FROM nginx:alpine
 
 MAINTAINER Pierre-Louis Launay <laupi.frpar@gmail.com>
 
-ADD nginx.conf /etc/nginx/
-
 RUN apk update \
   && apk upgrade \
   && apk add --no-cache bash \
@@ -15,6 +13,8 @@ ARG PHP_UPSTREAM_PORT=9000
 # Set upstream conf and remove the default conf
 RUN echo "upstream php-upstream { server ${PHP_UPSTREAM_CONTAINER}:${PHP_UPSTREAM_PORT}; }" > /etc/nginx/conf.d/upstream.conf \
   && rm /etc/nginx/conf.d/default.conf
+
+COPY ./etc/nginx/nginx.conf /etc/nginx/
 
 CMD ["nginx"]
 

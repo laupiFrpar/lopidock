@@ -1,4 +1,5 @@
-ARG KIBANA_VERSION=latest
-FROM kibana:${KIBANA_VERSION}
+ARG VERSION=latest
+
+FROM kibana:${VERSION}
 
 MAINTAINER Pierre-Louis Launay <laupi.frpar@gmail.com>

@@ -1,4 +1,5 @@
-ARG INFLUXDB_VERSION=latest
-FROM influxdb:${INFLUXDB_VERSION}
+ARG VERSION=latest
+
+FROM influxdb:${VERSION}
 
 MAINTAINER Pierre-Louis Launay <laupi.frpar@gmail.com>
