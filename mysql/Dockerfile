@@ -1,5 +1,4 @@
 ARG VERSION=latest
-
 FROM mysql:${VERSION}
 
 MAINTAINER Pierre-Louis Launay <laupi.frpar@gmail.com>
