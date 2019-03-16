@@ -14,9 +14,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         fontconfig \
+        # libzip-dev \
         locales \
         locales-all \
         ncurses-term \
+        unzip \
         zsh \
         zsh-antigen
 
@@ -28,11 +30,12 @@ ENV LANG="en_US.UTF-8" \
 COPY fonts /usr/share/fonts
 COPY dotfiles/zshrc /root/.zshrc
 COPY dotfiles/powerlevel9krc /root/.powerlevel9krc
-# COPY ./dotfiles/powerlevel9k ~/.powerlevel9k
+
 #####################################
-# ZSH
+# PHP extensions
 #####################################
 
+# RUN docker-php-ext-install zip
 
     #     php-cli
 #         php7.1-common \
@@ -89,16 +92,12 @@ COPY dotfiles/powerlevel9krc /root/.powerlevel9krc
 # # Composer:
 # #####################################
 
-# # Install composer and add its bin to the PATH.
-# RUN curl -s http://getcomposer.org/installer | php \
-#     && echo "export PATH=${PATH}:/var/www/vendor/bin" >> ~/.bashrc \
-#     && mv composer.phar /usr/local/bin/composer
+COPY config/composer.json /root/.composer/composer.json
 
-# # Source the bash
-# RUN . ~/.bashrc
-
-# # Remove Faillog and Lastlog to reduce the size of the final image.
-# RUN rm /var/log/lastlog /var/log/faillog
+# Install composer and add its bin to the PATH.
+RUN curl -s http://getcomposer.org/installer | php \
+    && mv composer.phar /usr/local/bin/composer \
+    && composer global install
 
 # #####################################
 # # Non-Root User:
@@ -209,7 +208,8 @@ COPY dotfiles/powerlevel9krc /root/.powerlevel9krc
 # Clean up
 # USER root
 RUN apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && rm /var/log/lastlog /var/log/faillog
 
 # Set default work directory
 WORKDIR /var/www

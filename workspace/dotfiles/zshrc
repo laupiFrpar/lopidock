@@ -6,7 +6,7 @@
 #                                   Variables
 # =============================================================================
 
-# export PATH="$HOME/bin:$HOME/.composer/vendor/bin:$PATH"
+export PATH="$HOME/.composer/vendor/bin:$PATH"
 
 # =============================================================================
 #                                   Plugins
