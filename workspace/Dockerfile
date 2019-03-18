@@ -6,14 +6,15 @@ LABEL maintainer="Pierre-Louis Launay <laupi.frpar@gmail.com>"
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Add the "PHP 7" ppa, yarn package
-# RUN apt-get install -y software-properties-common \
-    # && add-apt-repository -y ppa:ondrej/php \
-#     && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
-#     && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+# RUN apt-get install -y --no-install-recommends software-properties-common
+    # && add-apt-repository -y ppa:ondrej/php
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+        apt-transport-https \
+        ca-certificates \
         fontconfig \
+        gnupg \
         locales \
         locales-all \
         ncurses-term \
@@ -32,9 +33,9 @@ COPY fonts /usr/share/fonts
 COPY dotfiles/zshrc /root/.zshrc
 COPY dotfiles/powerlevel9krc /root/.powerlevel9krc
 
-# #####################################
-# # Composer:
-# #####################################
+#####################################
+# Composer:
+#####################################
 
 COPY config/composer.json /root/.composer/composer.json
 
@@ -42,6 +43,27 @@ COPY config/composer.json /root/.composer/composer.json
 RUN curl -s http://getcomposer.org/installer | php \
     && mv composer.phar /usr/local/bin/composer \
     && composer global install
+
+#####################################
+# NVM
+#####################################
+ARG NVM_VERSION=0.34.0
+ARG NODE_VERSION=node
+RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v${NVM_VERSION}/install.sh | bash \
+    && . $HOME/.nvm/nvm.sh \
+    && nvm install ${NODE_VERSION} \
+    && nvm use ${NODE_VERSION}
+
+#####################################
+# Yarn
+#####################################
+
+# RUN apt-get install -y --no-install-recommends software-properties-common
+    # && add-apt-repository -y ppa:ondrej/php \
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
+    && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends yarn
 
 # # Make sure that ~/.composer belongs to lopidock
 # RUN chown -R lopidock:lopidock /home/lopidock/.composer
@@ -97,20 +119,6 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # RUN echo "" >> ~/.bashrc \
 #     && echo 'export PATH="/var/www/vendor/bin:$PATH"' >> ~/.bashrc
-
-# #####################################
-# # NVM
-# #####################################
-# ARG NODE_VERSION="node"
-# RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash \
-#   && . ~/.nvm/nvm.sh \
-#   && nvm install ${NODE_VERSION} \
-#   && nvm use ${NODE_VERSION}
-
-# #####################################
-# # Yarn
-# #####################################
-# RUN apt-get install --no-install-recommends yarn
 
 # #
 # #--------------------------------------------------------------------------

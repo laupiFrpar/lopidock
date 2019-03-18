@@ -7,14 +7,12 @@ services:
   workspace:
     build:
       args:
-        - VERSION=${WORKSPACE_VERSION_PHP}
-      #   - COMPOSER_GLOBAL_INSTALL=${WORKSPACE_COMPOSER_GLOBAL_INSTALL}
+        - NODE_VERSION=${WORKSPACE_NODE_VERSION}
+        - NVM_VERSION=${WORKSPACE_NVM_VERSION}
+        - VERSION=${WORKSPACE_PHP_VERSION}
+
       #   - PUID=${WORKSPACE_PUID}
       #   - PGID=${WORKSPACE_PGID}
-      #   - TZ=${WORKSPACE_TIMEZONE}
-      #   - PHP_INSTALL_APCU=${PHP_INSTALL_APCU}
-      #   - PHP_INSTALL_APCU_BC=${PHP_INSTALL_APCU_BC}
-      #   - PHP_INSTALL_OPCACHE=${PHP_INSTALL_OPCACHE}
       context: ./workspace
     networks:
       - backend
