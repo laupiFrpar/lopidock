@@ -45,6 +45,16 @@ RUN curl -s http://getcomposer.org/installer | php \
     && composer global install
 
 #####################################
+# Composer:
+#####################################
+ARG PHPUNIT_VERSION=
+RUN if [ -z ${PHPUNIT_VERSION} ]; then \
+    composer global require phpunit/phpunit; \
+else \
+    composer global require phpunit/phpunit:^${PHPUNIT_VERSION}; \
+fi
+
+#####################################
 # NVM
 #####################################
 ARG NVM_VERSION=0.34.0
