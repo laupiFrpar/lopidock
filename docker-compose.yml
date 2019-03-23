@@ -2,7 +2,7 @@ version: '3'
 
 services:
 
-### Workspace Utilities Container #######
+  ### Workspace Utilities Container #####
 
   workspace:
     build:
@@ -15,6 +15,7 @@ services:
       #   - PUID=${WORKSPACE_PUID}
       #   - PGID=${WORKSPACE_PGID}
       context: ./workspace
+    container_name: workspace
     networks:
       - backend
       - frontend
@@ -22,6 +23,43 @@ services:
     volumes:
       - ${APPLICATION}:/var/www
 
+  ### Database ##########################
+
+  mysql:
+    build:
+      args:
+        - VERSION=${MYSQL_VERSION}
+      context: ./mysql
+    container_name: "mysql-${MYSQL_VERSION}"
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - TZ=${MYSQL_TIMEZONE}
+    networks:
+      - backend
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - ${DATA_SAVE_PATH}/mysql-${MYSQL_VERSION}:/var/lib/mysql
+      - ${MYSQL_CUSTOM_CONFIG_PATH}:/etc/mysql/conf.d/my.cnf
+
+  redis:
+    container_name: "redis-${REDIS_VERSION}"
+    image: redis:${REDIS_VERSION}
+    networks:
+      - backend
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - ${DATA_SAVE_PATH}/redis-${REDIS_VERSION}:/data
+
 networks:
   backend:
   frontend:
+
+### Volumes Setup #####################
+
+volumes:
+  mysql:
