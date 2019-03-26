@@ -1,4 +1,6 @@
 *.log
+config/*
+!config/.gitkeep
 data/*
 !data/.gitkeep
 sites/*.conf
