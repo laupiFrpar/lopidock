@@ -26,24 +26,19 @@ services:
   ### Database ##########################
 
   mysql:
-    build:
-      args:
-        - VERSION=${MYSQL_VERSION}
-      context: ./mysql
-    container_name: "mysql-${MYSQL_VERSION}"
+    container_name: mysql-${MYSQL_VERSION}
     environment:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_USER=${MYSQL_USER}
-      - TZ=${MYSQL_TIMEZONE}
+    image: laupifrpar/mysql:${MYSQL_VERSION}
     networks:
       - backend
     ports:
       - "${MYSQL_PORT}:3306"
     volumes:
       - ${DATA_SAVE_PATH}/mysql-${MYSQL_VERSION}:/var/lib/mysql
-      - ${MYSQL_CUSTOM_CONFIG_PATH}:/etc/mysql/conf.d/my.cnf
 
   redis:
     container_name: "redis-${REDIS_VERSION}"
@@ -54,6 +49,18 @@ services:
       - "${REDIS_PORT}:6379"
     volumes:
       - ${DATA_SAVE_PATH}/redis-${REDIS_VERSION}:/data
+
+### Server Mail #######################
+
+  mailhog:
+    container_name: "mailhog"
+    image: mailhog/mailhog
+    networks:
+      - backend
+      - frontend
+    ports:
+      - "${MAILHOG_PORT_SMTP}:1025"
+      - "${MAILHOG_PORT_WEB}:8025"
 
 networks:
   backend:
