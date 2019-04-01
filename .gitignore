@@ -1,4 +1,6 @@
 *.log
+config/*
+!config/.gitkeep
 data/*
 !data/.gitkeep
 sites/*.conf
@@ -7,3 +9,5 @@ sites/*.conf
 .DS_Store
 .docker-sync
 docker-compose-*.yml
+
+back
