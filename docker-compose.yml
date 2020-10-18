@@ -62,6 +62,16 @@ services:
       - "${MAILHOG_PORT_SMTP}:1025"
       - "${MAILHOG_PORT_WEB}:8025"
 
+### Blackfire #########################
+
+  blackfire:
+    image: blackfire/blackfire
+    environment:
+      - BLACKFIRE_SERVER_ID
+      - BLACKFIRE_SERVER_TOKEN
+    networks:
+      - backend
+
 networks:
   backend:
   frontend:
